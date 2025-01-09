@@ -1,0 +1,1 @@
+export type LogMethod = 'debug' | 'log' | 'info' | 'warn' | 'error';
