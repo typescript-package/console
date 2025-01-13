@@ -4,7 +4,7 @@
  * @abstract
  * @class Console
  */
-export class ConsoleColor {
+export class ConsoleColor<Color extends object = object> {
   public static color = {
     default: '\x1b[0m',
 
@@ -19,17 +19,30 @@ export class ConsoleColor {
     yellow: '\x1b[33m',
   };
 
-  public get color() {
-    return this.#color;
+  public get color(): Color & typeof ConsoleColor.color {
+    return this.#color as any;
   }
 
-  #color = ConsoleColor.color;
+  #color: Color & {[name: string]: string};
 
-  constructor(color: { [index: string]: string }) {
-    this.#color = { ...this.#color, ...color };
+  constructor(color?: Color) {
+    this.#color = { ...ConsoleColor.color, ...color || {} } as any;
   }
 
-  public get(name: keyof typeof this.color): string {
-    return this.#color[name];
+  public get<Name extends PropertyKey>(name: Name | keyof Color | keyof typeof this.color): string {
+    return (this.#color as any)[name];
+  }
+
+  public set<Name extends PropertyKey>(
+    name: Name | keyof Color | keyof typeof this.color,
+    color: string
+  ): this {
+    Object.assign(this.#color, {[name]: color});
+    return this;
+  }
+
+  public update(color: {[name: string]: string } | Partial<Color | typeof this.color>): this {
+    this.#color = { ...this.#color, ...color as object };
+    return this;
   }
 }
